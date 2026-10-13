@@ -74,7 +74,17 @@ function Library() {
   const store = useStore();
   const toast = useToast();
   const [params, setParams] = useSearchParams();
-  const activeArea = params.get('area') ?? '';
+  // The chosen area is held in local state (updated immediately) as well as the URL, because router URL updates are
+  // deferred: a photo imported right after picking an area must be filed into that area, not the previous one.
+  const [activeArea, setActiveAreaState] = useState(params.get('area') ?? '');
+  const activeAreaRef = useRef(activeArea);
+  const urlArea = params.get('area') ?? '';
+  useEffect(() => {
+    if (urlArea !== activeAreaRef.current) {
+      activeAreaRef.current = urlArea;
+      setActiveAreaState(urlArea);
+    }
+  }, [urlArea]);
   const [filter, setFilter] = useState<Filter>('all');
   const [shot, setShot] = useState<ShotType | 'all'>('all');
   const [openId, setOpenId] = useState<string | null>(null);
@@ -84,6 +94,8 @@ function Library() {
   const importRef = useRef<HTMLInputElement>(null);
 
   const setActiveArea = (id: string) => {
+    activeAreaRef.current = id;
+    setActiveAreaState(id);
     const p = new URLSearchParams(params);
     if (id) p.set('area', id);
     else p.delete('area');
@@ -93,6 +105,7 @@ function Library() {
   const handleFiles = async (files: FileList | null, origin: 'camera' | 'import') => {
     if (!files || files.length === 0) return;
     const list = [...files];
+    const activeArea = activeAreaRef.current;
     const errs: string[] = [];
     let ok = 0;
     for (const [i, file] of list.entries()) {
