@@ -1,0 +1,85 @@
+# Nightly promotion: fast-forwards `main` to `verified` at 8 pm Pacific, so tested work reaches the live Netlify site
+# without anyone doing anything.
+#
+# GitHub cron is UTC only and Pacific time shifts with daylight saving, so this is scheduled at 03:00, 03:30, 04:00 and
+# 04:30 UTC and each run first checks the real Pacific time: only runs that land in the 8 pm Pacific hour continue.
+# That gives an 8:00 pm run and an 8:30 pm backstop (in case GitHub skips or delays one); the second finds nothing to do.
+#
+# It only ever fast-forwards (never merges, rebases or force-pushes), and only after the build and the production
+# dependency audit pass on the exact commit. If `main` has a commit `verified` lacks, it stops and fails rather than guess.
+# A scheduled workflow runs only from the default branch, so changes to this file take effect after they reach main.
+# To promote by hand: Actions -> "Nightly promotion (verified to main)" -> Run workflow (skips the time check).
+name: Nightly promotion (verified to main)
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+    - cron: "30 3 * * *"
+    - cron: "0 4 * * *"
+    - cron: "30 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: promote
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Is it 8 pm Pacific?
+        id: time
+        run: |
+          hour=$(TZ=America/Los_Angeles date +%H)
+          echo "Pacific time now: $(TZ=America/Los_Angeles date '+%Y-%m-%d %H:%M %Z')"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "$hour" = "20" ]; then
+            echo "go=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Not the 8 pm Pacific hour (daylight-saving twin of the schedule); nothing to do."
+            echo "go=false" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.time.outputs.go == 'true'
+        with:
+          fetch-depth: 0
+      - name: Is there anything to promote?
+        id: diff
+        if: steps.time.outputs.go == 'true'
+        run: |
+          git fetch origin main develop verified || { echo "::error::There is no verified branch yet: the Checks workflow has not passed on a push to develop. Not promoting."; exit 1; }
+          main=$(git rev-parse origin/main)
+          ver=$(git rev-parse origin/verified)
+          if [ "$main" = "$ver" ]; then
+            echo "Nothing to promote: main and verified are both at ${main:0:7}."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if ! git merge-base --is-ancestor origin/main origin/verified; then
+            echo "::error::main has commits that verified does not. Not promoting; someone needs to reconcile the branches."
+            exit 1
+          fi
+          echo "Will promote $(git rev-list --count origin/main..origin/verified) commit(s) to production:"
+          git log --oneline origin/main..origin/verified
+          echo "(develop is $(git rev-list --count origin/verified..origin/develop) commit(s) ahead of verified; those wait for their checks.)"
+          git checkout --detach origin/verified
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-node@v4
+        if: steps.diff.outputs.changed == 'true'
+        with:
+          node-version: 22
+          cache: npm
+      - name: Safety gate (build, production dependency audit)
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          npm ci --no-fund
+          npm run build
+          npm audit --omit=dev --audit-level=high
+      - name: Fast-forward main to verified
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          git push origin origin/verified:main
+          echo "main is now at $(git rev-parse --short origin/verified)."

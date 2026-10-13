@@ -1,0 +1,83 @@
+# Runs every check on each push to develop and main and on every pull request.
+#
+# Change control: work reaches production by fast-forwarding main to the branch `verified`, never straight from develop.
+# When every check passes on a push to develop, the `verified` job moves `verified` forward to that exact commit.
+# promote.yml (8 pm Pacific) promotes only `verified`, so a commit whose tests failed (or have not finished) cannot reach main.
+# A newer push to the same branch cancels a run still in progress.
+name: Checks
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-fund
+      # What ships to the browser must have no high advisories (blocks). Build/test tools are reported only.
+      - name: Known vulnerabilities in what ships (production dependencies)
+        run: npm audit --omit=dev --audit-level=high
+      - name: Known vulnerabilities in build tools (reported, does not block)
+        continue-on-error: true
+        run: npm audit --audit-level=high
+      - name: Type check
+        run: npm run typecheck
+      - name: Unit and integration tests
+        run: npm test
+      - name: Build
+        run: npm run build
+      - name: Install browser for end-to-end tests
+        run: npx playwright install --with-deps chromium
+      - name: End-to-end tests (desktop and phone)
+        run: npm run test:e2e
+      - name: Keep test results when something fails
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-results
+          path: test-results
+          retention-days: 7
+
+  # Moves `verified` to this commit once every check above has passed on a push to develop. Fast-forward only, never
+  # backward or forced; if develop and verified have diverged it fails and says so rather than guess.
+  verified:
+    needs: checks
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Move verified forward to this commit
+        run: |
+          sha=$(git rev-parse HEAD)
+          if git ls-remote --exit-code --heads origin verified >/dev/null 2>&1; then
+            git fetch origin verified
+            cur=$(git rev-parse origin/verified)
+            if [ "$cur" = "$sha" ]; then echo "verified is already at ${sha:0:7}."; exit 0; fi
+            if git merge-base --is-ancestor "$sha" "$cur"; then echo "verified (${cur:0:7}) is already ahead of ${sha:0:7}; leaving it."; exit 0; fi
+            if ! git merge-base --is-ancestor "$cur" "$sha"; then
+              echo "::error::verified (${cur:0:7}) is not an ancestor of develop (${sha:0:7}); the branches have diverged. Not moving it."
+              exit 1
+            fi
+          fi
+          git push origin "$sha:refs/heads/verified"
+          echo "verified is now at ${sha:0:7}."

@@ -1,0 +1,55 @@
+# FieldShield - Netlify configuration
+#
+# Netlify builds and publishes only the `main` branch. Work never goes to main directly: it is pushed to `develop`,
+# tested by .github/workflows/checks.yml (which moves the branch `verified` forward when everything passes), and
+# promoted to main every night at 8 pm Pacific by .github/workflows/promote.yml. See docs/DEPLOYMENT.md.
+#
+# FieldShield is a static app: no functions, no server, no database. All inspection data stays in the user's browser.
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+  # Skip the build when nothing Netlify serves changed (documents, tests, samples, CI files).
+  ignore = 'git diff --quiet "$CACHED_COMMIT_REF" "$COMMIT_REF" -- . ":(exclude)*.md" ":(exclude)docs" ":(exclude)tests" ":(exclude)samples" ":(exclude)scripts" ":(exclude).github" ":(exclude).gitignore" ":(exclude).claude"'
+
+[build.environment]
+  NODE_VERSION = "22"
+  NPM_FLAGS = "--no-audit --no-fund"
+
+# The app uses hash routes (/#/...), so every real path is index.html; this only catches stray links.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "no-referrer"
+    # Camera access uses the phone's own camera app (file input), which needs no permission here.
+    # Microphone is allowed for the app itself only, for the optional dictation feature.
+    Permissions-Policy = "geolocation=(), microphone=(self), camera=(self), payment=(), usb=()"
+    Strict-Transport-Security = "max-age=63072000; includeSubDomains; preload"
+    # Everything is self-hosted. style-src needs 'unsafe-inline' for React inline styles. blob: and data: are used for
+    # photos stored on the device, generated PDFs/ZIPs, and restoring backups. connect-src has no outside hosts:
+    # FieldShield never sends inspection data anywhere.
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' data: blob:; worker-src 'self'; manifest-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+
+# Hashed asset filenames, so these can be cached hard.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# The service worker and manifest must always be checked for a newer copy, so updates reach phones.
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/manifest.webmanifest"
+  [headers.values]
+    Cache-Control = "no-cache"
