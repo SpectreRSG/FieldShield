@@ -67,7 +67,7 @@ jobs:
           echo "(develop is $(git rev-list --count origin/verified..origin/develop) commit(s) ahead of verified; those wait for their checks.)"
           git checkout --detach origin/verified
           echo "changed=true" >> "$GITHUB_OUTPUT"
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         if: steps.diff.outputs.changed == 'true'
         with:
           node-version: 22
