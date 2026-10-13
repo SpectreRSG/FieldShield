@@ -32,7 +32,7 @@ npm run build        # outputs to dist/
 npm run preview      # serves dist/ at http://localhost:4173
 ```
 
-**Live site:** hosted on Netlify from the `main` branch, which is updated automatically every night at 8 pm Pacific with work that passed all tests on `develop` — see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md). Push changes to `develop`, never to `main`.
+**Live site:** https://field-shield.netlify.app/ — hosted on Netlify from the `main` branch, which is updated automatically every night at 8 pm Pacific with work that passed all tests on `develop` — see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md). Push changes to `develop`, never to `main`.
 
 `dist/` is a static site — host it on any static web server over **HTTPS** (required for camera access and offline mode on phones). On a phone, open the site and use the browser’s “Add to Home Screen / Install app” to use it like an app.
 

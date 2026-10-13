@@ -1,6 +1,6 @@
 # Deployment and change control
 
-FieldShield is hosted on **Netlify** as a static site. There is no server or database — Netlify only serves the app files.
+FieldShield is hosted on **Netlify** as a static site at **https://field-shield.netlify.app/**. There is no server or database — Netlify only serves the app files.
 
 ## How changes reach the live site
 
