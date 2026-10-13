@@ -37,6 +37,7 @@ export function defaultSettings(): Settings {
     checklistTemplate: DEFAULT_CHECKLIST_TEMPLATE.map((i) => ({ ...i })),
     defaultPhotoRequirements: { ...DEFAULT_PHOTO_REQUIREMENTS },
     acknowledgedDataNotice: false,
+    allowBrowserSpeech: false,
     updatedAt: nowIso()
   };
 }

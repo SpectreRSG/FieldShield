@@ -549,7 +549,8 @@ export const InspectionSchema = z.object({
     preInspectionCompletedAt: z.string().optional(),
     departureReviewCompletedAt: z.string().optional(),
     finalReviewCompletedAt: z.string().optional(),
-    finalReviewNote: z.string().default('')
+    finalReviewNote: z.string().default(''),
+    lastExportedAt: z.string().optional()
   }),
   ...Timestamps
 });
@@ -574,6 +575,8 @@ export const SettingsSchema = z.object({
   checklistTemplate: z.array(ChecklistTemplateItemSchema),
   defaultPhotoRequirements: z.record(AreaKindSchema, z.array(ShotTypeSchema)),
   acknowledgedDataNotice: z.boolean().default(false),
+  /** Browser speech recognition can send audio to the browser vendor, so it is opt-in. */
+  allowBrowserSpeech: z.boolean().default(false),
   updatedAt: z.string()
 });
 export type Settings = z.infer<typeof SettingsSchema>;

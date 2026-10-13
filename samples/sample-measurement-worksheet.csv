@@ -1,0 +1,22 @@
+Type,Name,Location,Dimensions (as entered),Result,Formula,Value source,Record ID
+Roof plane,Front slope,Main dwelling › Front slope,"rectangle: 50 ft x 18 ft (slope dims), pitch 6/12 (26.6°)",900 sq ft,length × width = 50 ft × 18 ft = 900 sq ft,Measured,roof_c1c9fb6878b642be
+Roof plane,Rear slope,Main dwelling › Rear slope,"rectangle: 50 ft x 18 ft (slope dims), pitch 6/12 (26.6°)",900 sq ft,length × width = 50 ft × 18 ft = 900 sq ft,Measured,roof_be54ae3e15fa444b
+Roof plane,Left hip end,Unassigned,"triangle: 30 ft x 14 ft (slope dims), pitch 6/12 (26.6°)",210 sq ft,½ × base × height = ½ × 30 ft × 14 ft = 210 sq ft,Measured,roof_d958f54fa1654cae
+Roof plane,Right hip end,Unassigned,"triangle: 30 ft x — (slope dims), pitch 6/12 (26.6°)",INCOMPLETE - missing height,½ × base × height = ½ × 30 ft × ? ft,Measured,roof_9917e927e5c64722
+Roof line,eave,,50 ft,50 ft,entered length,Measured,rl_9e63aecd1b1547b1
+Roof line,eave,,50 ft,50 ft,entered length,Measured,rl_d018f2627db74c54
+Roof line,eave,,30 ft,30 ft,entered length,Measured,rl_940583b5656c483e
+Roof line,eave,,30 ft,30 ft,entered length,Measured,rl_dd9758930316480c
+Roof line,ridge,,20 ft,20 ft,entered length,Measured,rl_ee946495516a4af3
+Roof line,hip,,22 ft,22 ft,entered length,Measured,rl_6dfc36563ea84711
+Roof line,hip,,22 ft,22 ft,entered length,Measured,rl_228476745f234817
+Room,Kitchen,Main dwelling › Kitchen (Level 1) - Level 1,L 14 ft x W 12 ft x H 8 ft,Floor 168 sq ft,14 ft × 12 ft = 168 sq ft,Measured,room_11bce71a79914eb8
+Room,Kitchen,Main dwelling › Kitchen (Level 1) - Level 1,,Ceiling 168 sq ft,same as floor area,Measured,room_11bce71a79914eb8
+Room,Kitchen,Main dwelling › Kitchen (Level 1) - Level 1,,Gross wall 416 sq ft,2 × (14 + 12) = 52 ft; perimeter × height = 52 × 8 = 416 sq ft,Measured,room_11bce71a79914eb8
+Room,Kitchen,Main dwelling › Kitchen (Level 1) - Level 1,2 opening(s),Openings 34 sq ft,1 × door 3 × 6.67 + 1 × window 4 × 3.5 = 34 sq ft,Measured,room_11bce71a79914eb8
+Room,Kitchen,Main dwelling › Kitchen (Level 1) - Level 1,,Adjusted wall 382 sq ft,gross wall − openings = 416 − 34 = 382 sq ft,Measured,room_11bce71a79914eb8
+Room,Living room,Main dwelling › Living room (Level 1) - Level 1,L 18 ft x W 15 ft x H —,Floor 270 sq ft,18 ft × 15 ft = 270 sq ft,Estimated,room_89b2acd05696423c
+Room,Living room,Main dwelling › Living room (Level 1) - Level 1,,Ceiling 270 sq ft,same as floor area,Estimated,room_89b2acd05696423c
+Room,Living room,Main dwelling › Living room (Level 1) - Level 1,,Gross wall INCOMPLETE - missing ceiling height,2 × (18 + 15) = 66 ft; perimeter × height — waiting for dimensions,Estimated,room_89b2acd05696423c
+Room,Living room,Main dwelling › Living room (Level 1) - Level 1,0 opening(s),Openings 0 sq ft,no openings entered,Estimated,room_89b2acd05696423c
+Room,Living room,Main dwelling › Living room (Level 1) - Level 1,,Adjusted wall INCOMPLETE - missing ceiling height,gross wall − openings — waiting for dimensions,Estimated,room_89b2acd05696423c

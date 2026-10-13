@@ -7,6 +7,8 @@ const executablePath = existsSync('/opt/pw-browsers/chromium-1194/chrome-linux/c
 
 export default defineConfig({
   testDir: 'tests/e2e',
+  // samples.spec.ts regenerates samples/ — run with: SAMPLES=1 npx playwright test samples --project=desktop
+  testIgnore: process.env.SAMPLES ? [] : ['**/samples.spec.ts'],
   timeout: 120_000,
   fullyParallel: false,
   workers: 1,
