@@ -21,7 +21,7 @@
     "jszip": "^3.10.1",
     "papaparse": "^5.5.3",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0",
+    "react-dom": "^19.3.0",
     "react-router-dom": "^7.18.4",
     "zod": "^3.25.67"
   },
@@ -31,7 +31,7 @@
     "@testing-library/react": "^16.3.0",
     "@types/papaparse": "^5.3.16",
     "@types/react": "^19.1.8",
-    "@types/react-dom": "^19.1.6",
+    "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^4.5.2",
     "fake-indexeddb": "^6.0.1",
     "jsdom": "^26.1.0",
