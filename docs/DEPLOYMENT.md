@@ -15,6 +15,9 @@ push to develop ──► Checks workflow (type check, unit, build, e2e) ──a
 
 - Work is pushed to `develop` only.
 - `verified` is always the newest `develop` commit on which every check passed. A commit whose tests failed or are still running waits.
+- **Primary trigger:** a Claude Code scheduled routine (“FieldShield nightly 8 pm promotion”, 8:01 pm Pacific) runs `promote.yml`
+  by hand (workflow_dispatch) and reports the result. This mirrors CodeHound: GitHub's own cron was observed starting
+  FieldShield's scheduled runs 5–6 hours late, so it is only a backstop.
 - `main` is changed only by `promote.yml`, at 8 pm Pacific, and only by fast-forward. If `main` ever has a commit `verified` lacks,
   promotion stops and GitHub emails the repository owner.
 - GitHub cron runs in UTC; the workflow is scheduled at several UTC times aimed at 8:05 pm Pacific (with backstops) and each run
