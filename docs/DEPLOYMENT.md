@@ -17,8 +17,9 @@ push to develop ──► Checks workflow (type check, unit, build, e2e) ──a
 - `verified` is always the newest `develop` commit on which every check passed. A commit whose tests failed or are still running waits.
 - `main` is changed only by `promote.yml`, at 8 pm Pacific, and only by fast-forward. If `main` ever has a commit `verified` lacks,
   promotion stops and GitHub emails the repository owner.
-- GitHub cron runs in UTC; the workflow is scheduled at 03:00, 03:30, 04:00 and 04:30 UTC and each run checks the actual Pacific
-  time, so it is 8 pm Pacific year-round through daylight-saving changes.
+- GitHub cron runs in UTC; the workflow is scheduled at several UTC times aimed at 8:05 pm Pacific (with backstops) and each run
+  checks the actual Pacific time, so it stays at 8 pm year-round through daylight-saving changes. GitHub sometimes delays or skips
+  scheduled runs, so a run that starts any time from 8:00 to 9:59 pm Pacific may promote; the first one does the job.
 - To see what tonight will ship: `git fetch` then `git log --oneline origin/main..origin/verified`.
 - To promote immediately (exceptional): GitHub → Actions → “Nightly promotion (verified to main)” → Run workflow.
 - This is a convention enforced by the workflows, not by GitHub branch protection (not available on free private repositories).

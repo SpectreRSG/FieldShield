@@ -1,9 +1,10 @@
 # Nightly promotion: fast-forwards `main` to `verified` at 8 pm Pacific, so tested work reaches the live Netlify site
 # without anyone doing anything.
 #
-# GitHub cron is UTC only and Pacific time shifts with daylight saving, so this is scheduled at 03:00, 03:30, 04:00 and
-# 04:30 UTC and each run first checks the real Pacific time: only runs that land in the 8 pm Pacific hour continue.
-# That gives an 8:00 pm run and an 8:30 pm backstop (in case GitHub skips or delays one); the second finds nothing to do.
+# GitHub cron is UTC only and Pacific time shifts with daylight saving, so this is scheduled at several UTC times and
+# each run first checks the real Pacific time. Runs are aimed at 8:05 pm Pacific with backstops; GitHub often delays or
+# drops scheduled runs (especially on the hour), so any run that starts between 8:00 and 9:59 pm Pacific may promote.
+# The first run that promotes does the job; the rest find nothing to do.
 #
 # It only ever fast-forwards (never merges, rebases or force-pushes), and only after the build and the production
 # dependency audit pass on the exact commit. If `main` has a commit `verified` lacks, it stops and fails rather than guess.
@@ -13,10 +14,11 @@ name: Nightly promotion (verified to main)
 
 on:
   schedule:
-    - cron: "0 3 * * *"
-    - cron: "30 3 * * *"
-    - cron: "0 4 * * *"
-    - cron: "30 4 * * *"
+    - cron: "5 3 * * *"
+    - cron: "35 3 * * *"
+    - cron: "5 4 * * *"
+    - cron: "35 4 * * *"
+    - cron: "5 5 * * *"
   workflow_dispatch:
 
 permissions:
@@ -31,15 +33,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - name: Is it 8 pm Pacific?
+      - name: Is it the 8 pm Pacific promotion window?
         id: time
         run: |
           hour=$(TZ=America/Los_Angeles date +%H)
           echo "Pacific time now: $(TZ=America/Los_Angeles date '+%Y-%m-%d %H:%M %Z')"
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "$hour" = "20" ]; then
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || [ "$hour" = "20" ] || [ "$hour" = "21" ]; then
             echo "go=true" >> "$GITHUB_OUTPUT"
           else
-            echo "Not the 8 pm Pacific hour (daylight-saving twin of the schedule); nothing to do."
+            echo "Outside the 8:00-9:59 pm Pacific window (daylight-saving twin of the schedule); nothing to do."
             echo "go=false" >> "$GITHUB_OUTPUT"
           fi
       - uses: actions/checkout@v4
