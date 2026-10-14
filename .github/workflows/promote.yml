@@ -44,7 +44,7 @@ jobs:
             echo "Outside the 8:00-9:59 pm Pacific window (daylight-saving twin of the schedule); nothing to do."
             echo "go=false" >> "$GITHUB_OUTPUT"
           fi
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         if: steps.time.outputs.go == 'true'
         with:
           fetch-depth: 0
